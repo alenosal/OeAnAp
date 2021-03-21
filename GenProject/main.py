@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 
 def mccormickFunction(x):
-    return math.sin(x[0] + x[1]) + (x[0] + x[1])**2 - 1.5*x[0] + 2.5*x[1] + 1
+    return math.sin(x[0] + x[1]) + (x[0] - x[1])**2 - 1.5*x[0] + 2.5*x[1] + 1
 
 def functionPlot():
     samples = 500
