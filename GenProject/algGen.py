@@ -1,12 +1,14 @@
 import numpy as np
 
+
 def nbits(a, b, dx):
-    B=(int)((b-a)/dx + 1).bit_length()
-    dx_new = (b-a)/(2**B-1)
+    B = (int)((b - a) / dx + 1).bit_length()
+    dx_new = (b - a) / (2 ** B - 1)
     return B, dx_new
 
+
 def gen_population(P, N, B):
-    pop = np.random.randint(2, size=(P, N*B))
+    pop = np.random.randint(2, size=(P, N * B))
     return pop
 
 
@@ -57,6 +59,14 @@ def roulette(pop, evaluated_pop):
     return new_pop
 
 
+def tournament_selection(pop, scores, k):
+    selection_ix = np.random.randint(len(pop))
+    for ix in np.random.randint(0, len(pop), k - 1):
+        if scores[ix] < scores[selection_ix]:
+            selection_ix = ix
+    return pop[selection_ix]
+
+
 def cross(pop, pk):
     ile_bitow = pop.shape[1]
     ile = pop.shape[0]
@@ -103,13 +113,13 @@ last_best = None
 
 
 # YOUR CODE HERE
-def algorytm(fun, pop_size, pk, pm, generations, dx):
+def algorithm(fun, pop_size, pk, pm, generations, dx):
     N = 2
     B, dx_new = nbits(-10, 10, dx)
+    k = 3
     pop = gen_population(pop_size, N, B)
     evaluated_pop = evaluate_population(fun, pop, N, B, -10, dx_new)
     best_sol, best_val = get_best(pop, evaluated_pop)
-
     global first_best  #
     first_best = best_sol
 
@@ -119,6 +129,10 @@ def algorytm(fun, pop_size, pk, pm, generations, dx):
     mean = float(sum(evaluated_pop)) / float(pop_size)
     list_mean = [mean]
     for i in range(1, generations):
+        scores = [c for c in pop]
+        selected = [tournament_selection(pop, scores, k) for _ in range(generations)]
+        pop = selected[i]
+        pk = selected[i+1]
         pop = roulette(pop, evaluated_pop)
         pop = cross(pop, pk)
         pop = mutate(pop, pm)
