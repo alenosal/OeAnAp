@@ -1,5 +1,5 @@
 import numpy as np
-
+from pip._vendor.msgpack.fallback import xrange
 
 def nbits(a, b, dx):
     B = (int)((b - a) / dx + 1).bit_length()
@@ -13,7 +13,7 @@ def gen_population(P, N, B):
 
 
 def decode_individual(individual, N, B, a, dx):
-    decoded = np.ones(N);
+    decoded = np.ones(N)
     for i in range(N):
         bits = ''
         for j in range(B):
@@ -30,6 +30,24 @@ def evaluate_population(f, pop, N, B, a, dx):
         evaluated[i] = f(x)
     return evaluated
 
+
+  def evolve(p, n, b, pop, pk, pm):
+    for generation in range(gen_population(p, n, b)):
+        selection = cross(pop, pk)
+
+        elite_index = argmax([selection])
+        elite_member = selection[elite_index]
+
+    for i in range(len(selection)):
+        selection[i] = mutate(selection[i], pm)
+    population = list(sorted(selection,
+                            key=lambda x: i,
+                            reverse=True))
+    yield generation
+
+def argmax(values):
+  """Returns the index of the largest value in a list."""
+  return max(enumerate(values), key=lambda x: x[1])[0]
 
 def get_best(pop, evaluated_pop):
     best_individual = pop[np.argmax(evaluated_pop)]
@@ -91,6 +109,54 @@ def cross(pop, pk):
         new_pop[2 * i + 1] = pop[2 * i + 1]  # zostaje
     return new_pop
 
+def crossoverOnePoint(ind1, ind2):
+    size = min(len(ind1), len(ind2))
+    point = np.random.randint(1, size - 1)
+    ind1[point:], ind2[point:] = ind2[point:], ind1[point:]
+
+    return ind1, ind2
+
+def crossoverTwoPoint(ind1, ind2):
+    size = min(len(ind1), len(ind2))
+    point1 = np.random.randint(1, size)
+    point2 = np.random.randint(1, size - 1)
+    if point2 >= point1:
+        point2 += 1
+    else:
+        point1, point2 = point2, point1
+
+    ind1[point1:point2], ind2[point1:point2] \
+        = ind2[point1:point2], ind1[point1:point2]
+
+    return ind1, ind2
+
+def crossoverUniform(ind1, ind2, indpb):
+    size = min(len(ind1), len(ind2))
+    for i in xrange(size):
+        if np.random.random() < indpb:
+            ind1[i], ind2[i] = ind2[i], ind1[i]
+
+    return ind1, ind2
+
+
+def inv_mutation(chromosomes, mutation_rate):
+    mutated_chromosomes = []
+
+    for chromosome in chromosomes:
+
+        if np.random.random() < mutation_rate:
+            r1 = np.random.randint(0, len(chromosome) - 1)
+            r2 = np.random.randint(0, len(chromosome) - 1)
+
+            if r1 < r2:
+                mutated_chromosomes.append(chromosome[:r1] + chromosome[r1:r2][::-1] + chromosome[r2:])
+            else:
+                mutated_chromosomes.append(chromosome[:r2] + chromosome[r2:r1][::-1] + chromosome[r1:])
+
+        else:
+            mutated_chromosomes.append(chromosome)
+
+    return mutated_chromosomes
 
 def mutate(pop, pm):
     new_pop = pop.copy()
