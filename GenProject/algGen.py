@@ -156,6 +156,7 @@ def three_point_cross(pop, pk):
         new_pop[2 * i + 1] = pop[2 * i + 1]  # zostaje
         return new_pop
 
+
 def mutate(pop, pm):
     new_pop = pop.copy()
 
@@ -169,6 +170,7 @@ def mutate(pop, pm):
                     new_pop[i][j] = 0
 
     return new_pop
+
 
 def two_point_mutation(pop, pm):
     new_pop = pop.copy()
@@ -189,6 +191,23 @@ def two_point_mutation(pop, pm):
                 new_pop[i][second_bit] = 1
             else:
                 new_pop[i][second_bit] = 0
+    return new_pop
+
+
+def inversion(pop, pk):
+    new_pop = pop.copy()
+    number_of_bites = pop.shape[1]
+    pop_number = pop.shape[0]
+    for i in range(pop_number):
+        prob = np.random.rand()
+        if prob < pk:
+            first_cut = np.random.randint(1, number_of_bites // 2)
+            second_cut = np.random.randint(first_cut + 1, number_of_bites - 1)
+            tmp = pop[i][first_cut:second_cut].copy()
+            tmp.reverse()
+            new_pop[i][first_cut:second_cut] = tmp.copy()
+    return new_pop
+
 
 first_best = None
 middle_best = None
@@ -196,49 +215,3 @@ last_best = None
 
 
 
-# def algorithm(fun, pop_size, pk, pm, generations, dx):
-#     N = 2
-#     B, dx_new = nbits(-10, 10, dx)
-#     k = 3
-#     pop = gen_population(pop_size, N, B)
-#     evaluated_pop = evaluate_population(fun, pop, N, B, -10, dx_new)
-#     best_sol, best_val = get_best(pop, evaluated_pop)
-#     global first_best  #
-#     first_best = best_sol
-#
-#     best_generation = 0
-#     list_best = [best_val]
-#     list_best_generation = [best_val]
-#     mean = float(sum(evaluated_pop)) / float(pop_size)
-#     list_mean = [mean]
-#     for i in range(1, generations):
-#         scores = [c for c in pop]
-#         selected = [tournament_selection(pop, scores, k) for _ in range(generations)]
-#         pop = selected[i]
-#         pk = selected[i+1]
-#         pop = roulette(pop, evaluated_pop)
-#         pop = cross(pop, pk)
-#         pop = mutate(pop, pm)
-#
-#         evaluated_pop = evaluate_population(fun, pop, N, B, -10, dx_new)
-#         best_candidate, best_val_candidate = get_best(pop, evaluated_pop)
-#
-#         if i == 100:
-#             global middle_best
-#             middle_best = best_candidate
-#
-#         if i == 199:
-#             global last_best
-#             last_best = best_candidate
-#
-#         if best_val_candidate > list_best[i - 1]:
-#             best_sol = best_candidate
-#             best_generation = i
-#             list_best.append(best_val_candidate)
-#         else:
-#             list_best.append(list_best[i - 1])
-#
-#         list_best_generation.append(best_val_candidate)
-#         list_mean.append(float(sum(evaluated_pop)) / float(pop_size))
-#
-#     return best_sol, best_generation, list_best, list_best_generation, list_mean
